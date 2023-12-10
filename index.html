@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+    
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Obligo</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
+    <link rel="stylesheet" href="./styles.css">
+
+</head>
+
+<body style="margin: 0; padding: 0;">
+<section id="title" class="gradient-background">
+
+    <section class="vh-100">
+        <div class="container-fluid">
+            <div class="row">
+                 <div class="col-sm-6 px-0 d-none d-sm-block">
+                    <img src="./images/DEAL.jpg" alt="Deal image" class="w-100 vh-100"
+                     style="object-fit: cover; object-position: center top;">
+                 </div>
+
+            <div class="col-sm-6 text-black"  dir="rtl">
+                <div class="col-sm-6px-5 ms-xl-4">
+                    <i class="fas fa-crow fa-2x me-3 pt-5 mt-xl-14" style="color: #709085;"></i>
+                    <span class="h1 fw-bold mt-xl-14 ">אובליגו א.א.פ. אדוונס פייננס בע"מ</span>
+                </div>
+
+            <div class="d-flex align-items-center h-custom-2 px-5 ms-xl-4 mt-0 mb-5 pt-xl-0">
+                <form id="myForm" style="width: 23rem;">
+
+                        <div class="form-outline mb-4" dir="rtl">
+                            <input type="text" id="name" class="form-control form-control-lg" />
+                            <label class="form-label" for="form2Example18">שם מלא</label>
+                        </div>
+
+                        <div class="form-outline mb-4" dir="rtl">
+                            <input type="text" id="identifyNum" class="form-control form-control-lg" />
+                            <label class="form-label" for="form2Example28">תעודת זהות</label>
+                        </div>
+
+                        <div class="form-outline mb-4" dir="rtl">
+                            <input type="text" id="adress" class="form-control form-control-lg" />
+                            <label class="form-label" for="form2Example28">כתובת הנכס</label>
+                        </div>
+
+                        <div class="form-outline mb-4" dir="rtl">
+                            <input type="text" id="value" class="form-control form-control-lg" />
+                            <label class="form-label" for="form2Example28">ערך הנכס</label>
+                        </div>
+
+                        <div class="form-outline mb-4" dir="rtl">
+                            <input type="text" id="amount" class="form-control form-control-lg" />
+                            <label class="form-label" for="form2Example28">סכום ההלוואה</label>
+                        </div>
+
+                        <div class="form-outline mb-4" dir="rtl">
+                            <input type="text" id="interest" class="form-control form-control-lg" />
+                            <label class="form-label" for="form2Example28">ריבית</label>
+                        </div>
+
+                        <div class="form-outline mb-4" dir="rtl">
+                            <input type="text" id="period" class="form-control form-control-lg" />
+                            <label class="form-label" for="form2Example28">תקופת ההלוואה</label>
+                        </div>
+
+                        <div class="pt-1 mb-4">
+                        <button class="btn btn-info btn-lg btn-block" type="button" onclick="exportToExcel()">הפק דו"ח</button>
+                        </div>
+                </form>
+
+            </div>
+            </div>
+            </div>
+        </div>
+    </section>
+</section>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.5/xlsx.full.min.js"></script>
+<script>
+    function exportToExcel() {
+        // Get form data
+        const formData = {
+            שם_מלא: document.getElementById('name').value,
+            תעודת_זהות: document.getElementById('identifyNum').value,
+           כתובת: document.getElementById('adress').value,
+           ערך_הנכס: parseFloat(document.getElementById('value').value),
+            סכום_הלוואה: parseFloat(document.getElementById('amount').value),
+            ריבית: parseFloat(document.getElementById('interest').value),
+          תקופת_הלוואה: parseFloat(document.getElementById('period').value),
+            
+        };
+        // Create headers for the table
+        const tableData = [
+            ["תאריך", "סכום הלוואה", "ריבית", "עח קרן", "יתרת קרן לאחר תשלום"]
+        ];
+         
+        
+      
+        var numOfMonths = parseFloat(document.getElementById('period').value) * 12;  // Getting the number of the months
+        var interestRate = (parseFloat(document.getElementById('interest').value)) / 100; // Getting the interest rate
+        var loanAmount = parseFloat(document.getElementById('amount').value); // Getting the loan amount
+
+        // Calculate PMT
+        const pmt = -1 * calculatePMT(interestRate / 12, numOfMonths, loanAmount);
+
+        // Adding the first row details
+        var AHKEREN= pmt + (interestRate * loanAmount / 12) ;
+    
+        // Get the current date
+        const currentDate = new Date();
+        const formattedDate = `${currentDate.getDate().toString().padStart(2, '0')}-${(currentDate.getMonth() + 1).toString().padStart(2, '0')}-${currentDate.getFullYear()}`;
+        const firstRow = [formattedDate, pmt, (interestRate * loanAmount /12), AHKEREN, loanAmount + AHKEREN];
+        tableData.push(firstRow);
+
+        var leftToPay = loanAmount+AHKEREN;
+
+        
+        // Calculate and add rows for each month from the second row
+        for (let i = 1; i < numOfMonths; i++) {
+           var date = calculateDate(currentDate, i * 30);  // Add 30 days in each iteration
+            var interest = leftToPay * interestRate / 12;
+            AHKEREN = pmt + interest;
+            var fundBalance = leftToPay + AHKEREN;
+
+            const rowData = [date, pmt, interest, AHKEREN, fundBalance];
+            tableData.push(rowData);
+            leftToPay += AHKEREN;
+        }
+
+        // Create a worksheet
+        const ws = XLSX.utils.json_to_sheet(tableData);
+        
+        // Create a workbook
+        const wb = XLSX.utils.book_new();
+
+        XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
+
+        // Save the file with the name שם_מלא.xlsx
+        const fileName = `${formData.שם_מלא}.xlsx`;
+        XLSX.writeFile(wb, fileName);
+    
+        // Calculating the PMT formula: PMT = pv * rate / (1 - (1 + rate)^-nper)
+        function calculatePMT( rate,  nper,  pv) {
+            const denominator = Math.pow(1 + rate, -nper);
+            return pv * rate / (1 - denominator);
+        }
+
+
+        // Calculating the dates for the table rows
+        function calculateDate(startDate, daysToAdd) {
+           const previousDate = new Date(startDate); // Use the startDate as the base date
+            previousDate.setDate(startDate.getDate() + daysToAdd); // Add 30 days
+
+            // Format the date as "dd-mm-yyyy"
+            const finalDate = `${previousDate.getDate().toString().padStart(2, '0')}-${(previousDate.getMonth() + 1).toString().padStart(2, '0')}-${previousDate.getFullYear()}`;
+            return finalDate;
+        }
+    }
+</script>
+</body>
+
+</html>
