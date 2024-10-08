@@ -4,7 +4,6 @@ The calculator aims to assist users in understanding various aspects of financia
 
 ## Project review:
 I made this project during the break between the first and the second year of my degree. 
-Haven't really finished it. 
 
 ## Features:
 The Obligo-Calculator is designed to produce the following types of financial reports:
